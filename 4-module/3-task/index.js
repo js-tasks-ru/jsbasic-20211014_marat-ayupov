@@ -18,9 +18,7 @@ function highlight(table) {
         ageCell = tdElement.cellIndex;
       }
     }
-  }
 
-  for (let tdElement of tdElements) {
     if (tdElement.closest('tbody')) {
       if (tdElement.cellIndex === statusCell) {
         if (!tdElement.dataset.available) {
