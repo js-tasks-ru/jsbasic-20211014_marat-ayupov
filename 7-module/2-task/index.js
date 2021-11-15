@@ -1,12 +1,15 @@
 import createElement from '../../assets/lib/create-element.js';
 
 export default class Modal {
-  modalTitle = 'Вот сюда нужно добавлять заголовок';
-  modalBody = 'A сюда нужно добавлять содержимое тела модального окна';
   body = document.body;
 
   constructor() {
-    this.body.append(this.render());
+    this.createdModal = this.render();
+
+    let closeButton = this.createdModal.querySelector('.modal__close');
+    closeButton.addEventListener('click', this.close);
+
+    this.body.append(this.createdModal);
   }
 
   open() {
@@ -16,15 +19,17 @@ export default class Modal {
   }
 
   setTitle(title) {
-    this.modalTitle = title;
+    this.createdModal.querySelector('.modal__title').textContent = title;
   }
 
   setBody(body) {
-    this.modalBody = body;
+    let elemBody = this.createdModal.querySelector('.modal__body');
+    elemBody.innerHTML = '';
+    elemBody.append(body);
   }
 
   render() {
-    let createdModal = createElement(`
+    return createElement(`
       <div class="modal">
         <div class="modal__overlay"></div>
         
@@ -35,29 +40,20 @@ export default class Modal {
               <img src="/assets/images/icons/cross-icon.svg" alt="close-icon" />
             </button>
     
-            <h3 class="modal__title">
-              ${this.modalTitle}
-            </h3>
+            <h3 class="modal__title">Вот сюда нужно добавлять заголовок</h3>
           </div>
     
-          <div class="modal__body"></div>
+          <div class="modal__body">
+            A сюда нужно добавлять содержимое тела модального окна
+          </div>
         </div>
       </div>
     `);
-
-    let elemBody = createdModal.querySelector('.modal__body');
-    elemBody.firstElementChild?.remove();
-    elemBody.append(this.modalBody);
-
-    let closeButton = createdModal.querySelector('.modal__close');
-    closeButton.addEventListener('click', this.close);
-
-    return createdModal;
   }
 
   close = () => {
     this.body.classList.remove('is-modal-open');
-    this.body.querySelector('.modal').remove();
+    this.createdModal.remove();
 
     window.removeEventListener('keydown', this.onKeyDown);
   };
