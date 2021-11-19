@@ -17,6 +17,8 @@ export default class StepSlider {
     </div>
   `);
 
+  activeClass = 'slider__step-active';
+
   sliderProgress = this.elem.querySelector('.slider__progress');
   sliderSteps = this.elem.querySelector('.slider__steps');
   sliderValue = this.elem.querySelector('.slider__value');
@@ -30,38 +32,34 @@ export default class StepSlider {
       this.sliderSteps.append(this.render(i === value));
     }
 
-    this.elem.addEventListener('click', this.onClick);
-    this.sliderThumb.addEventListener('pointerdown', this.onPointerDown);
-
     this.sliderThumb.ondragstart = () => false;
     this.sliderThumb.onpointerdown = () => false;
     this.sliderThumb.onpointermove = () => false;
+
+    this.setSliderValue(value);
+
+    this.elem.addEventListener('click', this.onClick);
+    this.sliderThumb.addEventListener('pointerdown', this.onPointerDown);
   }
 
   render(isActive) {
     let createSpan = createElement(`<span></span>`);
 
     if (isActive) {
-      createSpan.classList.add('slider__step-active');
+      createSpan.classList.add(this.activeClass);
     }
 
     return createSpan;
   }
 
   onClick = (e) => {
-    let pointOfClick = Math.floor((e.offsetX / e.currentTarget.offsetWidth) * 100);
-    let currentStep = this.onMove(pointOfClick);
+    if (!e.target.classList.contains('slider__thumb')) {
+      let pointOfClick = Math.floor((e.offsetX / e.currentTarget.offsetWidth) * 100);
 
-    this.sliderValue.textContent = currentStep + '';
-    this.sliderProgress.style.width = `${Math.floor(currentStep * this.stepCounter)}%`;
-    this.sliderThumb.style.left = `${Math.floor(currentStep * this.stepCounter)}%`;
+      this.setSliderValue(this.onMove(pointOfClick));
 
-    this.elem.dispatchEvent(
-      new CustomEvent('slider-change', {
-        detail: currentStep,
-        bubbles: true,
-      })
-    );
+      this.generateNewEvent(this.onMove(pointOfClick));
+    }
   };
 
   onMove(e) {
@@ -70,7 +68,7 @@ export default class StepSlider {
 
     for (let i = 0, r = 0; i < this.steps; i++) {
       // Определяю часть слайдера от точки клика по нему
-      if (pointOfClick < r && pointOfClick >= (r - this.stepCounter)) {
+      if (pointOfClick <= r && pointOfClick >= (r - this.stepCounter)) {
         currentStep = (pointOfClick >= r - (this.stepCounter / 2)) ? i : i - 1;
       }
 
@@ -84,8 +82,8 @@ export default class StepSlider {
     let thumb = this.sliderThumb;
     this.elem.classList.add('slider_dragging');
 
-    let shiftX = e.clientX - thumb.getBoundingClientRect().left;
-    let shiftY = e.clientY - thumb.getBoundingClientRect().top;
+    let shiftX = e.clientX - (thumb.getBoundingClientRect().left + thumb.offsetWidth / 2);
+    let shiftY = e.clientY - (thumb.getBoundingClientRect().top + thumb.offsetWidth / 2);
 
     function moveThumb(x = 0, y = 0) {
       let left = x - shiftX;
@@ -96,32 +94,69 @@ export default class StepSlider {
         top,
       };
     }
-    // moveThumb(e.pageX, e.pageY).left;
 
-    // let pointOfClick = Math.floor((left / e.currentTarget.offsetWidth) * 100);
+    // let percent = this.getPercent(moveThumb(e.pageX).left);
 
-    let currentStep = this.onMove(moveThumb(e.pageX, e.pageY).left);
+    // this.setSliderValue(percent, true);
 
-    console.log(moveThumb(e.pageX).left, thumb.getBoundingClientRect().left);
+    let moveSlider = (e) => {
+      let percent = this.getPercent(moveThumb(e.clientX).left);
 
-    this.sliderValue.textContent = currentStep + '';
-    this.sliderProgress.style.width = `${Math.floor(currentStep * this.stepCounter)}%`;
-    this.sliderThumb.style.left = `${Math.floor(currentStep * this.stepCounter)}%`;
-
-    /*let moveSlider = (e) => {
-      let left = moveThumb(e.offsetX).left;
-
-      console.log(left, this.elem.offsetWidth);
-
-      let pointOfClick = Math.floor((left / this.elem.offsetWidth) * 100);
-
-      let currentStep = this.onMove(pointOfClick);
-
-      this.sliderValue.textContent = currentStep + '';
-      this.sliderProgress.style.width = `${Math.floor(currentStep * this.stepCounter)}%`;
-      this.sliderThumb.style.left = `${Math.floor(currentStep * this.stepCounter)}%`;
+      this.setSliderValue(percent, true);
     };
 
-    document.addEventListener('pointermove', moveSlider);*/
+    document.addEventListener('pointermove', moveSlider);
+
+    let pointerUp = (e) => {
+      let percent = this.getPercent(moveThumb(e.clientX).left);
+
+      this.setSliderValue(this.onMove(percent));
+
+      document.removeEventListener('pointerup', pointerUp);
+      document.removeEventListener('pointermove', moveSlider);
+
+      this.generateNewEvent(this.onMove(percent));
+
+      this.elem.classList.remove('slider_dragging');
+    };
+
+    document.addEventListener('pointerup', pointerUp);
+  };
+
+  getPercent = (value) => {
+    let percent = Math.floor(
+      ((value - this.elem.offsetLeft) / this.elem.offsetWidth) * 100
+    );
+
+    if (percent > 100) {
+      percent = 100;
+    }
+
+    if (percent <= 0) {
+      percent = 0;
+    }
+
+    return percent;
+  };
+
+  setSliderValue(value, isDragging) {
+    let percent = (isDragging) ? value : Math.floor(value * this.stepCounter);
+    let step = (isDragging) ? this.onMove(value) : value;
+
+    this.sliderSteps.querySelector(`.${this.activeClass}`).classList.remove(this.activeClass);
+    this.sliderSteps.children[step].classList.add(this.activeClass);
+
+    this.sliderValue.textContent = step + '';
+    this.sliderProgress.style.width = `${percent}%`;
+    this.sliderThumb.style.left = `${percent}%`;
+  }
+
+  generateNewEvent = (detail) => {
+    this.elem.dispatchEvent(
+      new CustomEvent('slider-change', {
+        detail,
+        bubbles: true,
+      })
+    );
   };
 }
