@@ -83,7 +83,7 @@ export default class StepSlider {
     this.elem.classList.add('slider_dragging');
 
     let shiftX = e.clientX - (thumb.getBoundingClientRect().left + thumb.offsetWidth / 2);
-    let shiftY = e.clientY - (thumb.getBoundingClientRect().top + thumb.offsetWidth / 2);
+    let shiftY = e.clientY - (thumb.getBoundingClientRect().top + thumb.offsetHeight / 2);
 
     function moveThumb(x = 0, y = 0) {
       let left = x - shiftX;
@@ -94,10 +94,6 @@ export default class StepSlider {
         top,
       };
     }
-
-    // let percent = this.getPercent(moveThumb(e.pageX).left);
-
-    // this.setSliderValue(percent, true);
 
     let moveSlider = (e) => {
       let percent = this.getPercent(moveThumb(e.clientX).left);
