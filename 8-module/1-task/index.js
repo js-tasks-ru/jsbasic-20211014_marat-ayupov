@@ -1,6 +1,10 @@
 import createElement from '../../assets/lib/create-element.js';
 
 export default class CartIcon {
+  fixedTop = 50;
+  fixedLeft = 20;
+  fixedRight = 10;
+
   constructor() {
     this.render();
 
@@ -34,11 +38,35 @@ export default class CartIcon {
   }
 
   addEventListeners() {
-    document.addEventListener('scroll', () => this.updatePosition());
-    window.addEventListener('resize', () => this.updatePosition());
+    document.addEventListener('scroll', this.updatePosition);
+    window.addEventListener('resize', this.updatePosition);
   }
 
-  updatePosition() {
-    // ваш код ...
+  updatePosition = () => {
+    let cart = this.elem;
+    let cartTop = cart.offsetTop;
+    let container = this.elem.closest('.container');
+    let containerLeftOffset = container.offsetWidth + container.offsetLeft;
+
+    if (cart.offsetWidth && window.matchMedia("(min-width: 768px)").matches) {
+      let left = containerLeftOffset + this.fixedLeft;
+
+      if (document.documentElement.clientWidth - (containerLeftOffset + cart.offsetWidth + this.fixedLeft) < this.fixedRight) {
+        left = (document.documentElement.clientWidth) - cart.offsetWidth - this.fixedRight;
+      }
+
+      if (cartTop < window.pageYOffset) {
+        cart.style.cssText = `
+          position: fixed;
+          z-index: 1000;
+          top: ${this.fixedTop}px;
+          left: ${left}px
+        `;
+      } else {
+        cart.removeAttribute('style');
+      }
+    } else {
+      cart.removeAttribute('style');
+    }
   }
 }
