@@ -121,7 +121,7 @@ export default class StepSlider {
 
   getPercent = (value) => {
     let percent = Math.floor(
-      ((value - this.elem.offsetLeft) / this.elem.offsetWidth) * 100
+      ((value - this.elem.getBoundingClientRect().left) / this.elem.offsetWidth) * 100
     );
 
     if (percent > 100) {
