@@ -26,6 +26,7 @@ export default class StepSlider {
 
   constructor({steps, value = 0}) {
     this.steps = steps;
+    this.value = value;
     this.stepCounter = Math.floor(100 / (this.steps - 1));
 
     for (let i = 0; i < steps; i++) {
