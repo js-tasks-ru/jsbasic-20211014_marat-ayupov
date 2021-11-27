@@ -26,6 +26,7 @@ export default class StepSlider {
 
   constructor({steps, value = 0}) {
     this.steps = steps;
+    this.value = value;
     this.stepCounter = Math.floor(100 / (this.steps - 1));
 
     for (let i = 0; i < steps; i++) {
@@ -121,7 +122,7 @@ export default class StepSlider {
 
   getPercent = (value) => {
     let percent = Math.floor(
-      ((value - this.elem.offsetLeft) / this.elem.offsetWidth) * 100
+      ((value - this.elem.getBoundingClientRect().left) / this.elem.offsetWidth) * 100
     );
 
     if (percent > 100) {

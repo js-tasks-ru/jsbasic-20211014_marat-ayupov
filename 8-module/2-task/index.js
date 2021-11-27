@@ -36,7 +36,7 @@ export default class ProductGrid {
 
     this.products = this.productsForFilter.filter(c => {
       let noNuts = (this.filters.noNuts) ? c.nuts !== this.filters.noNuts : true;
-      let vegetarianOnly = (this.filters.vegeterianOnly) ? c.vegeterian <= this.filters.vegeterianOnly : true;
+      let vegetarianOnly = (this.filters.vegeterianOnly) ? c.vegeterian === this.filters.vegeterianOnly : true;
       let maxSpiciness = (this.filters.maxSpiciness) ? c.spiciness <= this.filters.maxSpiciness : true;
       let category = (this.filters.category) ? c.category === this.filters.category : true;
 
